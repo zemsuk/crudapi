@@ -1,13 +1,26 @@
 {
-    "name": "zems/restapi",
-    "description": "This is a rest api package created by zems",
+    "name": "zems/crudapi",
+    "description": "Zems crud api for laravel",
     "type": "library",
-    "license": "MIT",
     "authors": [
         {
-            "name": "Zems",
-            "email": "uksems@gmail.com"
+            "name": "Hossain Jamir",
+            "email": "ukzems@gmail.com"
         }
     ],
-    "require": {}
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            
+            "Zems\\Crudapi\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Zems\\Crudapi\\ZemsProvider"]
+        }
+    }
 }
