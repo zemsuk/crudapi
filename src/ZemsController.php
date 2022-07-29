@@ -263,14 +263,6 @@ class ZemsController extends Controller
         }      
         return $data;
     }
-    public static function test()
-    {
-        return "Test";
-    }
-    public function hi()
-    {
-        return "Hi from Controller";
-    }
     
     
 }
