@@ -1,0 +1,13 @@
+{
+    "name": "zems/restapi",
+    "description": "This is a rest api package created by zems",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Zems",
+            "email": "uksems@gmail.com"
+        }
+    ],
+    "require": {}
+}
