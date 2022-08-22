@@ -127,12 +127,18 @@ class ZemsController extends Controller
     public function zems_create($data = false)
     {
         // echo "<h3>$this->method</h3>";
+        
         $join = [];
         if(isset($data['join'])){
             foreach($data['join'] as $join_table => $field){
-                $join[$join_table] = DB::table($join_table)->get();                              
+                $tbl_name =  $join_table;
+                if (strpos($join_table, ' as ') !== false) {
+                    $jtn = explode(" as ", $join_table);
+                    $tbl_name =  $jtn[1];
+                }
+                $join[$tbl_name] = DB::table($join_table)->get();                              
             }
-        }        
+        }       
         if($this->request->route()->getPrefix() == '/zems'){ 
             // echo json_encode($json_data);               
             return View::make($data['view']."_create", compact('join'));
