@@ -37,7 +37,6 @@ class ZemsController extends Controller
     }    
     public function zems_get($data = false)
     {
-        // echo "<h3>$this->method</h3>";
         $model = $data['model'];    
         $models = 'App\\Models\\'.$model;      
         if(isset($data['fields'])){
@@ -54,9 +53,7 @@ class ZemsController extends Controller
         if(isset($data['where'])){
             $models = $models->where($data['where']);
         }
-        // echo $this->request->route()->getPrefix();
         if($this->request->route()->getPrefix() == 'api'){
-            // exit();
             if(isset($data['where_api'])){
                 $models = $models->where($data['where_api']);
             }
@@ -71,17 +68,22 @@ class ZemsController extends Controller
             $models = $models->limit($data['limit']);
         }        
         if(isset($data['pagination'])){
-            $json_data = $models->paginate($data['pagination']);
-            // echo $json_data->links();
-            // exit();
+            $json_data = $models->paginate($data['pagination']);            
         } else {
             $json_data = $models->get();
         }
+         
         if(!$json_data->isEmpty()){
+            $zems['content'] = $json_data;
+            if(isset($data['other'])){
+                foreach($data['other'] as $key => $other){
+                    $zems['other'][$key] = $other;
+                }
+            }
             if($this->request->route()->getPrefix() == '/zems'){                
-                return View::make($data['view'], compact('json_data'));
+                return View::make($data['view'], compact('zems'));
             }else{
-                return $json_data;
+                return $zems;
             } 
         } else {
             return ['error'=>'Ops!! Something went wrong!! Please Try againg'];
@@ -90,7 +92,6 @@ class ZemsController extends Controller
     
     public function zems_read($data = false)
     {
-        // echo "<h4>Rest Read</h4>";
         $id = $this->request->id;
         $model = $data['model'];    
         $models = 'App\\Models\\'.$model;       
@@ -114,11 +115,16 @@ class ZemsController extends Controller
         $plural = Str::plural($plural, 2);        
         $json_data = $models->where($plural.'.id',$id)->first();        
         if($json_data){
-            if($this->request->route()->getPrefix() == '/zems'){ 
-                // echo json_encode($json_data);               
-                return View::make($data['view']."_details", compact('json_data'));
+            $zems['content'] = $json_data;
+            if(isset($data['other'])){
+                foreach($data['other'] as $key => $other){
+                    $zems['other'][$key] = $other;
+                }
+            }
+            if($this->request->route()->getPrefix() == '/zems'){               
+                return View::make($data['view']."_details", compact('zems'));
             }else{
-                return $json_data;
+                return $zems;
             } 
         } else {
             return ['error'=>'Ops!! Something went wrong!! Please Try againg'];
@@ -126,8 +132,6 @@ class ZemsController extends Controller
     }
     public function zems_create($data = false)
     {
-        // echo "<h3>$this->method</h3>";
-        
         $join = [];
         if(isset($data['join'])){
             foreach($data['join'] as $join_table => $field){
@@ -138,9 +142,8 @@ class ZemsController extends Controller
                 }
                 $join[$tbl_name] = DB::table($join_table)->get();                              
             }
-        }       
-        if($this->request->route()->getPrefix() == '/zems'){ 
-            // echo json_encode($json_data);               
+        }        
+        if($this->request->route()->getPrefix() == '/zems'){             
             return View::make($data['view']."_create", compact('join'));
         } else {
             return ['msg'=>'Please Create your form with the help of you provided field'];
@@ -148,22 +151,28 @@ class ZemsController extends Controller
     }
     public function zems_store($data = false)
     {
-        $fields = $data['fields'];
-        // $this->zems_valid($fields);
-        
+        if(isset($data['fields'])){
+            $fields = $data['fields'];        
+        } else {
+            $fields = $this->request->post();
+        }
         $model = $data['model'];
         $models = 'App\\Models\\'.$model;
         $store = new $models;
         $json_data = $this->input_data($store);
         if($store->save()){
-            // $inserted_id = $store->id;
-            $json_data['id'] = $store->id;
-            // print json_encode($json_data);
+            $zems['content']['id'] = $store->id;
+            $zems['content'] = $json_data;
+            if(isset($data['other'])){
+                foreach($data['other'] as $key => $other){
+                    $zems['other'][$key] = $other;
+                }
+            }
             if($this->request->route()->getPrefix() == '/zems'){   
                 $current_route = $this->request->route()->getName(); 
-                return redirect("/zems/".$current_route)->with(['msg' => 'Data Insterted Successfully']);                
+                return redirect("/zems/".$current_route)->with(['msg' => 'Data Insterted Successfully', 'zems'=>$zems]);                
             }else{
-                return $json_data;
+                return $zems;
             }
         } else {
             return ['error'=>'Ops!! Something went wrong!! Please Try againg'];
@@ -172,19 +181,28 @@ class ZemsController extends Controller
     }
     public function zems_edit($data = false)
     {
-        // echo "<h4>Rest Edit Form</h4>";
         $model = $data['model'];
         $models = 'App\\Models\\'.$model;
         $id = $this->request->id;
-        $json_data = $models::find($id);
+        $zems['content'] = $models::find($id);
+        if(isset($data['other'])){
+            foreach($data['other'] as $key => $other){
+                $zems['other'][$key] = $other;
+            }
+        }
         $join = [];
         if(isset($data['join'])){
             foreach($data['join'] as $join_table => $field){
-                $join[$join_table] = DB::table($join_table)->get();                              
+                $tbl_name =  $join_table;
+                if (strpos($join_table, ' as ') !== false) {
+                    $jtn = explode(" as ", $join_table);
+                    $tbl_name =  $jtn[1];
+                }
+                $join[$tbl_name] = DB::table($join_table)->get();                              
             }
         }
         if($this->request->route()->getPrefix() == '/zems'){                
-            return View::make($data['view']."_edit", compact('json_data', 'join'));
+            return View::make($data['view']."_edit", compact('zems', 'join'));
         }else{
             return ['msg'=>'Please Create your Edit form with the help of you provided field'];
         }
@@ -192,20 +210,28 @@ class ZemsController extends Controller
     }
     public function zems_update($data = false)
     {
-        // echo "<h4>Rest Update!!</h4>";
-        $fields = $data['fields'];
-        // $this->zems_valid($fields);
+        if(isset($data['fields'])){
+            $fields = $data['fields'];        
+        } else {
+            $fields = $this->request->post();
+        }
         $model = $data['model'];
         $models = 'App\\Models\\'.$model;
         $id = $this->request->id;
         $store = $models::find($id);        
         $json_data = $this->input_data($store);
         if($store->save()){
+            $zems['content'] = $json_data;
+            if(isset($data['other'])){
+                foreach($data['other'] as $key => $other){
+                    $zems['other'][$key] = $other;
+                }
+            }
             if($this->request->route()->getPrefix() == '/zems'){   
                 $current_route = $this->request->route()->getName();
-                return redirect("/zems/".$current_route)->with(['msg' => 'Data Updated Successfully']);                
+                return redirect("/zems/".$current_route)->with(['msg' => 'Data Updated Successfully', 'zems'=>$zems]);                
             }else{
-                return $json_data;
+                return $zems;
             }
         } else {
             return ['error'=>'Ops!! Something went wrong!! Please Try againg'];
@@ -213,18 +239,22 @@ class ZemsController extends Controller
     }
     public function zems_delete($data = false)
     {
-        // echo "<h4>Rest Delete</h4>";
         $model = $data['model'];
         $models = 'App\\Models\\'.$model;
         $id = $this->request->id;
         $store = $models::find($id);        
         if($store->delete()){
-            $json_data = ['id' => $id];
+            $zems['content'] = ['id' => $id];
+            if(isset($data['other'])){
+                foreach($data['other'] as $key => $other){
+                    $zems['other'][$key] = $other;
+                }
+            }
             if($this->request->route()->getPrefix() == '/zems'){   
                 $current_route = $this->request->route()->getName(); 
-                return redirect("/zems/".$current_route)->with(['msg' => 'Data Deleted Successfully']);                
+                return redirect("/zems/".$current_route)->with(['msg' => 'Data Deleted Successfully', 'zems'=>$zems]);                
             }else{
-                return $json_data;
+                return $zems;
             }
         } else {
             return ['error'=>'Ops!! Something went wrong!! Please Try againg'];
@@ -260,15 +290,12 @@ class ZemsController extends Controller
         $req = $this->request->all();
         $data = [];
         foreach($req as $k => $r){
-            if($k != "_token" && $k != "_method" && $k != "_file"){
-                // echo $k.": ";
-                // echo $r."<br/>";
+            if($k != "_token" && $k != "_method" && $k != "_file"){                
                 $store->$k = $r;
                 $data[$k] = $r;
             }
         }      
         return $data;
     }
-    
     
 }
