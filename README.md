@@ -16,3 +16,26 @@ Crud Api for Headless cms
     $data['view'] = 'courses/courses';
     return $this->restapi($data); 
 
+#Field Type
+const zems_fields = [
+    {
+      pk:"id",
+      basic:"",
+      basic:"Custom Label",
+      basic:"|required",
+      basic:"Custom Label|required",
+      name:{type:'input',name:"name", label:"Name"},
+      phone:"Patient Phone", 
+      email:"", 
+      address:"address", 
+      dob:{field:"input", taype:"date"}, 
+      location_id:"location_id", 
+      sex:{type:"radio",option:[{label:"Male", value:1},{label:"Female", value:2}],name:"sex", label:"Gender"}, 
+      kin_name:"kin_name", 
+      kin_phone:"kin_phone"
+    },
+    // 2nd column
+    {
+      avatar:{name:'avatar'}
+    }
+  ]
