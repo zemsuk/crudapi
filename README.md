@@ -39,3 +39,8 @@ const zems_fields = [
       avatar:{name:'avatar'}
     }
   ]
+
+#Default Field
+->image (auto upload option)
+->details (Multiline field/Textarea)
+->satus (it's a drop down option Show/Hide)
